@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>Bassinet Embedded</title>
+	<link rel="stylesheet" href="styles.css">
+
+	<script src="https://cdn.netpie.io/microgear.js"></script>
+	<script src="mysecret.js"></script>
+
+	<script>
+	    const APPID = AppData.APPID
+	    const KEY = AppData.KEY
+	    const SECRET = AppData.SECRET
+
+	    const ALIAS = "Site";
+
+	    var microgear = Microgear.create({
+	        key: KEY,
+	        secret: SECRET,
+	        alias : ALIAS
+	    });
+
+	    microgear.on('message', function(topic,msg) {     
+	    	if (topic == "/BassinetEmbeddedLab/bassinet/babystatus"){
+	    		if (msg == "ON"){
+	        		document.getElementById("baby_status").innerHTML = "ลูกมึงจะตายแล้ว!";
+	    		} else {
+	        		document.getElementById("baby_status").innerHTML = "ไม่ตายละครับ";
+	    		}
+	    	}
+	    	if (topic == "/BassinetEmbeddedLab/bassinet/musicstatus"){
+	    		if (msg == "ON"){
+	        		document.getElementById("music_status").innerHTML = "Music is on";
+	        		change_button(1);
+	    		} else {
+	        		document.getElementById("music_status").innerHTML = "Music is off";
+	        		change_button(0);
+	    		}
+	    	}
+	        // document.getElementById("log").innerHTML += Date.now() + " > " + topic + "  " + msg + "<br />";
+	    });
+
+	    microgear.on('connected', function() {
+	        microgear.setAlias(ALIAS);
+
+	        microgear.publish("/bassinet/StatusRequest", "1");
+	        document.getElementById("data").innerHTML = "Now I am connected with netpie...";
+
+	        // setInterval(function() {},1000);
+	    });
+
+	    microgear.connect(APPID);
+	    microgear.subscribe("/bassinet/babystatus");
+	    microgear.subscribe("/bassinet/musicstatus");
+
+	    function change_button(state){
+	    	if (state == 0){
+	    		document.getElementById("music_button").innerHTML = '<button id="music_on_button" onclick="music_on()">Turn music on</button>';
+	    	} else if (state == 1){
+	    		document.getElementById("music_button").innerHTML = '<button id="music_off_button" onclick="music_off()">Turn music off</button>';
+	    	}
+	    }
+
+	    function music_on(){
+	    	microgear.publish("/bassinet/musicalert", "ON");
+	    }
+
+	    function music_off(){
+	    	microgear.publish("/bassinet/musicalert", "OFF");
+	    }
+
+	</script>
+</head>
+<body>
+	<div class="center">
+		<div id="data">Connecting to netpie..</div>
+		<div id="baby_status">Loading Baby Status..</div>
+		<div id="music_status">Loading Music Status..</div>
+		<div id="music_button"></div>
+		<div id="log"></div>
+	</div>
+</body>
+
+</html>

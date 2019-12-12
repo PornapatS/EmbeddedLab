@@ -1,0 +1,72 @@
+<script src="https://cdn.netpie.io/microgear.js"></script>
+<script src="mysecret.js"></script>
+
+<script>
+    const APPID = AppData.APPID
+    const KEY = AppData.KEY
+    const SECRET = AppData.SECRET
+
+    const ALIAS = "Dummy";
+
+    var microgear = Microgear.create({
+        key: KEY,
+        secret: SECRET,
+        alias : ALIAS
+    });
+
+    var music_status = 0;
+    var baby_status = 1;
+
+    microgear.on('message', function(topic,msg) {     
+    	if (topic == "/BassinetEmbeddedLab/bassinet/StatusRequest"){
+            statusRespond()
+    	}
+        if (topic == "/BassinetEmbeddedLab/bassinet/musicalert"){
+            if (msg == "ON"){
+                music_status = 1;
+            } else {
+                music_status = 0;
+            }
+            statusRespond()
+        }
+        document.getElementById("log").innerHTML += Date.now() + " > " + topic + "  " + msg + "<br />";
+    });
+
+    microgear.on('connected', function() {
+        microgear.setAlias(ALIAS);
+        document.getElementById("data").innerHTML = "Now I am connected with netpie...";
+    });
+
+    function statusRespond(){
+        if (baby_status == 1){
+            microgear.publish("/bassinet/babystatus", "ON");
+        } else {
+            microgear.publish("/bassinet/babystatus", "OFF");
+        }
+        if (music_status == 1){
+            microgear.publish("/bassinet/musicstatus", "ON");
+        } else {
+            microgear.publish("/bassinet/musicstatus", "OFF");
+        }
+    }
+
+    function toggleBaby(){
+        baby_status = baby_status ^ 1;
+        statusRespond();
+    }
+
+    microgear.connect(APPID);
+    microgear.subscribe("/bassinet/musicalert");
+    microgear.subscribe("/bassinet/StatusRequest");
+
+</script>
+
+
+
+<div id="data">_____</div>
+<div id="device_status"></div>
+<div id="log"></div>
+<div id="baby_status"></div>
+<div id="music_status"></div>
+<div id="music_on"></div>
+<button onclick="toggleBaby()">Toggle Baby</button>
