@@ -21,8 +21,10 @@
 	        alias : ALIAS
 	    });
 
-	    microgear.on('message', function(topic,msg) {     
+	    microgear.on('message', function(topic,msg) {   
+	    	//console.log(topic, msg);  
 	    	if (topic == "/BassinetEmbeddedLab/bassinet/babystatus"){
+	        	document.getElementById("baby_status").style.color = "black";
 	    		if (msg == "0"){
 	        		document.getElementById("baby_status").innerHTML = "ลูกยังปลอดภัยดี";
 	    		} else if (msg == "1"){
@@ -33,6 +35,7 @@
 	    		}
 	    	}
 	    	if (topic == "/BassinetEmbeddedLab/bassinet/musicstatus"){
+	    		document.getElementById("music_status").style.color = "black";
 	    		if (msg == "1"){
 	        		document.getElementById("music_status").innerHTML = "Music is on";
 	        		change_button(1);
@@ -47,11 +50,9 @@
 	    microgear.on('connected', function() {
 	        microgear.setAlias(ALIAS);
 	        microgear.publish("/bassinet/statusrequest", "A");
-	        
+
 	        document.getElementById("data").innerHTML = "Connected to netpie";
 	        document.getElementById("data").style.color = "green";
-	        document.getElementById("music_status").style.color = "black";
-	        document.getElementById("baby_status").style.color = "black";
 	        // setInterval(function() {},1000);
 	    });
 
