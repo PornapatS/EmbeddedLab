@@ -3,7 +3,7 @@
 
 <head>
 	<title>Bassinet Embedded</title>
-	<link rel="stylesheet" href="styles.css">
+	<link rel="stylesheet" href="style1.css">
 
 	<script src="https://cdn.netpie.io/microgear.js"></script>
 	<script src="mysecret.js"></script>
@@ -23,14 +23,17 @@
 
 	    microgear.on('message', function(topic,msg) {     
 	    	if (topic == "/BassinetEmbeddedLab/bassinet/babystatus"){
-	    		if (msg == "ON"){
-	        		document.getElementById("baby_status").innerHTML = "ลูกมึงจะตายแล้ว!";
+	    		if (msg == "0"){
+	        		document.getElementById("baby_status").innerHTML = "ลูกยังปลอดภัยดี";
+	    		} else if (msg == "1"){
+	        		document.getElementById("baby_status").innerHTML = "ลูกกำลังเกาะเปลอยู่";
 	    		} else {
-	        		document.getElementById("baby_status").innerHTML = "ไม่ตายละครับ";
+	        		document.getElementById("baby_status").innerHTML = "ลูกมึงจะตายแล้ว!";
+	        		document.getElementById("baby_status").style.color = "red";
 	    		}
 	    	}
 	    	if (topic == "/BassinetEmbeddedLab/bassinet/musicstatus"){
-	    		if (msg == "ON"){
+	    		if (msg == "1"){
 	        		document.getElementById("music_status").innerHTML = "Music is on";
 	        		change_button(1);
 	    		} else {
@@ -43,10 +46,12 @@
 
 	    microgear.on('connected', function() {
 	        microgear.setAlias(ALIAS);
-
-	        microgear.publish("/bassinet/StatusRequest", "1");
-	        document.getElementById("data").innerHTML = "Now I am connected with netpie...";
-
+	        microgear.publish("/bassinet/statusrequest", "A");
+	        
+	        document.getElementById("data").innerHTML = "Connected to netpie";
+	        document.getElementById("data").style.color = "green";
+	        document.getElementById("music_status").style.color = "black";
+	        document.getElementById("baby_status").style.color = "black";
 	        // setInterval(function() {},1000);
 	    });
 
@@ -56,29 +61,33 @@
 
 	    function change_button(state){
 	    	if (state == 0){
-	    		document.getElementById("music_button").innerHTML = '<button id="music_on_button" onclick="music_on()">Turn music on</button>';
+	    		document.getElementById("music_button").innerHTML = 'Turn music on';
+	    		document.getElementById("music_button").onclick = music_on;
 	    	} else if (state == 1){
-	    		document.getElementById("music_button").innerHTML = '<button id="music_off_button" onclick="music_off()">Turn music off</button>';
+	    		document.getElementById("music_button").innerHTML = 'Turn music off';
+	    		document.getElementById("music_button").onclick = music_off;
 	    	}
 	    }
 
 	    function music_on(){
-	    	microgear.publish("/bassinet/musicalert", "ON");
+	    	microgear.publish("/bassinet/statusrequest", "B"); // ON
 	    }
 
 	    function music_off(){
-	    	microgear.publish("/bassinet/musicalert", "OFF");
+	    	microgear.publish("/bassinet/statusrequest", "C"); // OFF
 	    }
 
 	</script>
 </head>
 <body>
-	<div class="center">
-		<div id="data">Connecting to netpie..</div>
-		<div id="baby_status">Loading Baby Status..</div>
-		<div id="music_status">Loading Music Status..</div>
-		<div id="music_button"></div>
-		<div id="log"></div>
+	<div class="container">
+		<div class="blog">
+			<div id="data" style="color: gray;">Connecting to netpie..</div>
+			<div id="baby_status" style="color: gray;">Loading Baby Status..</div>
+			<div id="music_status" style="color: gray;">Loading Music Status..</div>
+			<div id="music_button" class="btn red">Loading..</div>
+			<div id="log"></div>
+		</div>
 	</div>
 </body>
 

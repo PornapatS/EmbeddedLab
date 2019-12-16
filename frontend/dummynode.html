@@ -18,17 +18,17 @@
     var baby_status = 1;
 
     microgear.on('message', function(topic,msg) {     
-    	if (topic == "/BassinetEmbeddedLab/bassinet/StatusRequest"){
-            statusRespond()
-    	}
-        if (topic == "/BassinetEmbeddedLab/bassinet/musicalert"){
-            if (msg == "ON"){
+    	if (topic == "/BassinetEmbeddedLab/bassinet/statusrequest"){
+            if (msg == "B"){
                 music_status = 1;
-            } else {
+                statusRespond();
+            } else if (msg == "C"){
                 music_status = 0;
+                statusRespond();
+            } else {
+                statusRespond();
             }
-            statusRespond()
-        }
+    	}
         document.getElementById("log").innerHTML += Date.now() + " > " + topic + "  " + msg + "<br />";
     });
 
@@ -39,14 +39,14 @@
 
     function statusRespond(){
         if (baby_status == 1){
-            microgear.publish("/bassinet/babystatus", "ON");
+            microgear.publish("/bassinet/babystatus", "1");
         } else {
-            microgear.publish("/bassinet/babystatus", "OFF");
+            microgear.publish("/bassinet/babystatus", "0");
         }
         if (music_status == 1){
-            microgear.publish("/bassinet/musicstatus", "ON");
+            microgear.publish("/bassinet/musicstatus", "1");
         } else {
-            microgear.publish("/bassinet/musicstatus", "OFF");
+            microgear.publish("/bassinet/musicstatus", "0");
         }
     }
 
@@ -57,7 +57,7 @@
 
     microgear.connect(APPID);
     microgear.subscribe("/bassinet/musicalert");
-    microgear.subscribe("/bassinet/StatusRequest");
+    microgear.subscribe("/bassinet/statusrequest");
 
 </script>
 
