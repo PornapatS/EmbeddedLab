@@ -21,7 +21,7 @@ int babyStatus = 0; //2 = Died,1 = Near Death ,0 = Alive
 int musicStatus = 0; //1 = On, 0 = Off
 
 //Buffer for UART
-//char *buf = "A";
+char *buf = "A";
 
 WiFiClient client;
 MicroGear microgear(client);
@@ -32,44 +32,46 @@ void publishStatus(){
   microgear.publish("/bassinet/babystatus",String(babyStatus));
 }
 
-//void uartTransmit(String str){
-//  Serial.println("Transmit str : "+str);
+//void uartTransmit(char *str){ //Transmit "8" = Open, "9" = Close
 //  Serial.write(str);
 //}
 
-//boolean uartPolling(){
-//  if (Serial.available() > 0){
-//    buf = Serial.read();
-//    return true;
-//  }
-//  return false;
-//}
+boolean uartPolling(){ //Recieve only "0","1","2"
+  if (Serial.available() > 0){
+    Serial.readBytes(buf,1);
+    return true;
+  }
+  return false;
+}
 
 void onMsghandler(char *topic, uint8_t* msg, unsigned int msglen){
-  Serial.print("Incoming message --> ");
+//  Serial.print("Incoming message --> ");
   msg[msglen] = '\0';
-  Serial.println((char *)msg);
-  Serial.println(topic);
+//  Serial.println((char *)msg);
+//  Serial.println(topic);
   if (strcmp(topic,"/BassinetEmbeddedLab/bassinet/statusrequest") == 0){
     if (strcmp((char *)msg,"A") == 0){ //Publish all status to /bassinet/...
         publishStatus();
     }
     else if (strcmp((char *)msg,"B") == 0) { //Turn on music + Publish status
       musicStatus = 1;
+      Serial.write("8");
       publishStatus();
     }
     else if (strcmp((char *)msg,"C") == 0){ //Turn off music + Publish status
       musicStatus = 0;
+      Serial.write("9");
       publishStatus();
     }
   }
 }
 
 void onConnected(char *attribute, uint8_t* msg, unsigned int msglen){
-  Serial.println("Connecting to NETPIE...");
+//  Serial.println("Connecting to NETPIE...");
   microgear.setAlias(ALIAS);
   if (microgear.connected()){
-    Serial.println("NETPIE Connected!");
+//    Serial.println("NETPIE Connected!");
+    digitalWrite(LED_BUILTIN,LOW);
     microgear.subscribe("/bassinet/statusrequest");
   }
 }
@@ -77,22 +79,24 @@ void onConnected(char *attribute, uint8_t* msg, unsigned int msglen){
 void setup() {
   microgear.on(MESSAGE,onMsghandler);
   microgear.on(CONNECTED,onConnected);
-  
+  pinMode(LED_BUILTIN, OUTPUT);
+  digitalWrite(LED_BUILTIN, HIGH);
 
   Serial.begin(115200);
+  Serial.swap();
 
-  Serial.print("Initializing WIFI connection");
-  for (int i = 0; i < 3; ++i){Serial.print(".");}
-  Serial.println();
+//  Serial.print("Initializing WIFI connection");
+//  for (int i = 0; i < 3; ++i){Serial.print(".");}
+//  Serial.println();
   
   WiFi.begin(ssid,password);
-  Serial.println("Connecting to Wifi");
+//  Serial.println("Connecting to Wifi");
   
   while (WiFi.status() != WL_CONNECTED){
     delay(1000);
-    Serial.println("Connection Failed, RECONNECTING");
+//    Serial.println("Connection Failed, RECONNECTING");
   }
-  Serial.println("Connecting Success!");
+//  Serial.println("Connecting Success!");
 
   //Microgear Initialize
   microgear.init(KEY,SECRET,ALIAS);
@@ -103,20 +107,33 @@ void setup() {
 }
 
 void loop() {
-  
-//  if (uartPolling() == true){
-    if (microgear.connected()){
-      microgear.loop();
+  if (microgear.connected()){
+    microgear.loop();
 
-    }else{
-      if (timer >= 3000){
-        Serial.println("Connection to NETPIE lost...");
-        microgear.connect(APPID);
-        timer = 0;
-      }else{
-        timer += 100;
+    if (uartPolling() == true){
+      if (strcmp(buf,"0") == 0){
+//        Serial.println("Publish normal");
+        microgear.publish("/bassinet/babystatus","0");
+      }
+      else if (strcmp(buf,"1") == 0){
+//        Serial.println("Publish near death");
+        microgear.publish("/bassinet/babystatus","1");
+        
+      }
+      else if (strcmp(buf,"2") == 0){
+//        Serial.println("Publish died");
+        microgear.publish("/bassinet/babystatus","2");
       }
     }
-    delay(100);
-//  }
+
+  }else{
+    if (timer >= 3000){
+//      Serial.println("Connection to NETPIE lost...");
+      microgear.connect(APPID);
+      timer = 0;
+    }else{
+      timer += 100;
+    }
+  }
+  delay(100);
 }
