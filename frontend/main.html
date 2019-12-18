@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>Bassinet Embedded</title>
+	<link rel="stylesheet" href="style1.css">
+
+	<script src="https://cdn.netpie.io/microgear.js"></script>
+	<script src="mysecret.js"></script>
+
+	<script>
+	    const APPID = AppData.APPID
+	    const KEY = AppData.KEY
+	    const SECRET = AppData.SECRET
+
+	    const ALIAS = "Site";
+
+	    var microgear = Microgear.create({
+	        key: KEY,
+	        secret: SECRET,
+	        alias : ALIAS
+	    });
+
+	    microgear.on('message', function(topic,msg) {   
+	    	console.log(topic, msg);  
+	    	if (topic == "/BassinetEmbeddedLab/bassinet/babystatus"){
+	        	document.getElementById("baby_status").style.color = "green";
+	    		if (msg == "0"){
+	        		document.getElementById("baby_status").innerHTML = "ลูกยังปลอดภัยดี";
+	    		} else if (msg == "1"){
+					document.getElementById("baby_status").innerHTML = "[คำเตือน] เปลกำลังแกว่ง";
+					document.getElementById("baby_status").style.color = "yellow";
+	    		}else if (msg == "2"){
+					document.getElementById("baby_status").innerHTML = "[คำเตือน] ลูกกำลังปีน";
+					document.getElementById("baby_status").style.color = "orange";
+				}else {
+	        		document.getElementById("baby_status").innerHTML = "[อันตราย!] ลูกกำลังจะตก";
+	        		document.getElementById("baby_status").style.color = "red";
+	    		}
+	    	}
+	    	if (topic == "/BassinetEmbeddedLab/bassinet/musicstatus"){
+	    		document.getElementById("music_status").style.color = "black";
+	    		if (msg == "1"){
+	        		document.getElementById("music_status").innerHTML = "Music is on";
+	        		change_button(1);
+	    		} else {
+	        		document.getElementById("music_status").innerHTML = "Music is off";
+	        		change_button(0);
+	    		}
+	    	}
+	        // document.getElementById("log").innerHTML += Date.now() + " > " + topic + "  " + msg + "<br />";
+	    });
+
+	    microgear.on('connected', function() {
+	        microgear.setAlias(ALIAS);
+			microgear.publish("/bassinet/statusrequest", "A");
+			console.log("PBLEAW")
+
+	        document.getElementById("data").innerHTML = "Connected to netpie";
+	        document.getElementById("data").style.color = "green";
+	        // setInterval(function() {},1000);
+	    });
+
+	    microgear.connect(APPID);
+	    microgear.subscribe("/bassinet/babystatus");
+	    microgear.subscribe("/bassinet/musicstatus");
+
+	    function change_button(state){
+	    	if (state == 0){
+	    		document.getElementById("music_button").innerHTML = 'Turn music ON';
+	    		document.getElementById("music_button").onclick = music_on;
+	    	} else if (state == 1){
+	    		document.getElementById("music_button").innerHTML = 'Turn music OFF';
+	    		document.getElementById("music_button").onclick = music_off;
+	    	}
+	    }
+
+	    function music_on(){
+	    	microgear.publish("/bassinet/statusrequest", "B"); // ON
+	    }
+
+	    function music_off(){
+	    	microgear.publish("/bassinet/statusrequest", "C"); // OFF
+	    }
+
+	</script>
+</head>
+<body>
+	<div class="container">
+		<div class="blog">
+			<div id="data" style="color: gray;">Connecting to netpie..</div>
+			<div id="baby_status" style="color: gray;">Loading Baby Status..</div>
+			<div id="music_status" style="color: gray;">Loading Music Status..</div>
+			<div id="music_button" class="btn red">Loading..</div>
+			<div id="log"></div>
+		</div>
+	</div>
+</body>
+
+</html>
