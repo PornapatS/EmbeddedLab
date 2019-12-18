@@ -1,7 +1,7 @@
 /**
  * Bassinet Project
  * Embedded Lab Project 2019
- * Code for NETPIE 
+ * Code for esp8266 nodeMCU
 */
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
@@ -64,7 +64,6 @@ void onMsghandler(char *topic, uint8_t* msg, unsigned int msglen){
 }
 
 void onConnected(char *attribute, uint8_t* msg, unsigned int msglen){
-//  Serial.println("Connecting to NETPIE...");
   microgear.setAlias(ALIAS);
   if (microgear.connected()){
     digitalWrite(LED_BUILTIN,LOW);
@@ -72,7 +71,7 @@ void onConnected(char *attribute, uint8_t* msg, unsigned int msglen){
   }
 }
 
-void blinkk(){
+void blinkk(){ //For debugging without UART
   digitalWrite(LED_BUILTIN, HIGH);
   delay(100);
   digitalWrite(LED_BUILTIN, LOW);
@@ -94,10 +93,7 @@ void setup() {
 
   //Microgear Initialize
   microgear.init(KEY,SECRET,ALIAS);
-  microgear.connect(APPID);
-  
-
-  
+  microgear.connect(APPID); 
 }
 
 void loop() {
