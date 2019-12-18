@@ -22,15 +22,19 @@
 	    });
 
 	    microgear.on('message', function(topic,msg) {   
-	    	//console.log(topic, msg);  
+	    	console.log(topic, msg);  
 	    	if (topic == "/BassinetEmbeddedLab/bassinet/babystatus"){
-	        	document.getElementById("baby_status").style.color = "black";
+	        	document.getElementById("baby_status").style.color = "green";
 	    		if (msg == "0"){
 	        		document.getElementById("baby_status").innerHTML = "ลูกยังปลอดภัยดี";
 	    		} else if (msg == "1"){
-	        		document.getElementById("baby_status").innerHTML = "ลูกกำลังเกาะเปลอยู่";
-	    		} else {
-	        		document.getElementById("baby_status").innerHTML = "ลูกมึงจะตายแล้ว!";
+					document.getElementById("baby_status").innerHTML = "[คำเตือน] เปลกำลังแกว่ง";
+					document.getElementById("baby_status").style.color = "yellow";
+	    		}else if (msg == "2"){
+					document.getElementById("baby_status").innerHTML = "[คำเตือน] ลูกกำลังปีน";
+					document.getElementById("baby_status").style.color = "orange";
+				}else {
+	        		document.getElementById("baby_status").innerHTML = "[อันตราย!] ลูกกำลังจะตก";
 	        		document.getElementById("baby_status").style.color = "red";
 	    		}
 	    	}
@@ -49,7 +53,8 @@
 
 	    microgear.on('connected', function() {
 	        microgear.setAlias(ALIAS);
-	        microgear.publish("/bassinet/statusrequest", "A");
+			microgear.publish("/bassinet/statusrequest", "A");
+			console.log("PBLEAW")
 
 	        document.getElementById("data").innerHTML = "Connected to netpie";
 	        document.getElementById("data").style.color = "green";
@@ -62,10 +67,10 @@
 
 	    function change_button(state){
 	    	if (state == 0){
-	    		document.getElementById("music_button").innerHTML = 'Turn music on';
+	    		document.getElementById("music_button").innerHTML = 'Turn music ON';
 	    		document.getElementById("music_button").onclick = music_on;
 	    	} else if (state == 1){
-	    		document.getElementById("music_button").innerHTML = 'Turn music off';
+	    		document.getElementById("music_button").innerHTML = 'Turn music OFF';
 	    		document.getElementById("music_button").onclick = music_off;
 	    	}
 	    }
